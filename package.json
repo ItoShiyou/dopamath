@@ -1,0 +1,23 @@
+{
+  "name": "dopamath",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render DopaMath out/dopamath.mp4 --codec=h264 --crf=18",
+    "still": "remotion still DopaMath out/still.png --frame=",
+    "assets": "python3 scripts/gen_se.py && python3 scripts/gen_voice.py && python3 scripts/gen_bgm.py"
+  },
+  "dependencies": {
+    "@fontsource/noto-sans-jp": "^5.3.1",
+    "@remotion/cli": "^4.0.250",
+    "@remotion/transitions": "^4.0.250",
+    "@types/react": "^18.3.31",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.250"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
