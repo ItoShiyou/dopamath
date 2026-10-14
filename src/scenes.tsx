@@ -239,7 +239,7 @@ export const SceneGap: React.FC = () => {
 };
 
 /** ===== 6. CTA (38.7–42.5s) ===== */
-export const SceneCTA: React.FC = () => {
+export const SceneCTA: React.FC<{ teaser?: string }> = ({ teaser = "次回:1+2+3+…＝−1/12？" }) => {
   const f = useCurrentFrame();
   const pulse = 1 + 0.07 * Math.sin(f * 0.9);
   return (
@@ -255,25 +255,25 @@ export const SceneCTA: React.FC = () => {
         )}
       </Center>
       {f > 30 && (
-        <Center top={1000} style={{ left: 380, right: "auto" }}>
+        <Center top={960} style={{ left: 380, right: "auto" }}>
           <Pop from={0.1} style={{ transform: `translateY(${Math.sin(f * 0.8) * 16}px)` }}><div style={{ fontSize: 150, fontFamily: FONT }}>👆</div></Pop>
         </Center>
       )}
       {f > 50 && (
-        <div style={{ position: "absolute", left: 0, right: 0, textAlign: "center", top: 1150, transform: "rotate(-3deg)" }}>
-          <Pop from={0.1}><Txt size={54} color={C.cyan} glow={C.cyan}>次回:1+2+3+…＝−1/12？</Txt></Pop>
+        <div style={{ position: "absolute", left: 0, right: 0, textAlign: "center", top: 1195, transform: "rotate(-3deg)" }}>
+          <Pop from={0.1}><Txt size={54} color={C.cyan} glow={C.cyan}>{teaser}</Txt></Pop>
         </div>
       )}
     </>
   );
 };
 
-export const TopTag: React.FC = () => {
+export const TopTag: React.FC<{ tag?: string }> = ({ tag = "高校数学で脳汁" }) => {
   const f = useCurrentFrame();
   return (
     <div style={{ position: "absolute", left: 40, top: 70, display: "flex", gap: 14, alignItems: "center" }}>
       <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 50, color: "#fff", background: C.pink, padding: "2px 22px", borderRadius: 14, transform: `rotate(${Math.sin(f / 6) * 2}deg)` }}>⚡DOPAMATH</div>
-      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 40, color: C.yellow, WebkitTextStroke: "6px #12002b", paintOrder: "stroke fill" }}>高校数学で脳汁</div>
+      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 40, color: C.yellow, WebkitTextStroke: "6px #12002b", paintOrder: "stroke fill" }}>{tag}</div>
     </div>
   );
 };

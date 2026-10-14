@@ -2,16 +2,19 @@
   ACESTEP_API=http://127.0.0.1:8001 python3 scripts/gen_bgm.py
 ACE-Step に繋がらない時だけ、プレビュー用の簡易シンセBGMにフォールバックする(--fallback で強制)。
 """
-import json, os, pathlib, subprocess, sys, tempfile, time, urllib.request, wave
+import argparse, json, os, pathlib, subprocess, sys, tempfile, time, urllib.request, wave
 import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = ROOT / "public" / "bgm.wav"
+ap = argparse.ArgumentParser(); ap.add_argument("--video", default="nine"); ap.add_argument("--fallback", action="store_true"); ARGS = ap.parse_args()
+VDIR = ROOT / "src" / "videos" / ARGS.video
+VMETA = json.loads((VDIR / "meta.json").read_text())
+OUT = ROOT / "public" / ARGS.video / "bgm.wav"; OUT.parent.mkdir(parents=True, exist_ok=True)
 API = os.environ.get("ACESTEP_API", "http://127.0.0.1:8001").rstrip("/")
 KEY = os.environ.get("ACESTEP_API_KEY", "")
-DURATION = 44
-BPM = 150
-PROMPT = os.environ.get("BGM_PROMPT", (
+DURATION = int(VMETA["duration"]) + 2
+BPM = VMETA["bpm"]
+PROMPT = os.environ.get("BGM_PROMPT", VMETA.get("bgmPrompt") or (
     "high energy hyperpop, glitchy electronic dance, 150 bpm, punchy four on the floor kick, "
     "bouncy staccato synth lead, heavy sub bass, fast trap hi-hats, risers and drops, "
     "addictive hook, instrumental, no vocals"))
@@ -84,7 +87,7 @@ def synth(dst):
 with tempfile.TemporaryDirectory() as td:
     tmp = pathlib.Path(td) / "bgm.wav"
     src = None
-    if "--fallback" not in sys.argv:
+    if not ARGS.fallback:
         try:
             src = acestep(tmp); print("BGM source: ACE-Step")
         except Exception as e:

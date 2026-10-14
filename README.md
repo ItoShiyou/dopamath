@@ -15,3 +15,16 @@ npm run render   # out/dopamath.mp4
 ```
 - 構成・SEタイミングは `src/lines.json` / `src/timeline.ts`。
 - `gen_bgm.py` は ACE-Step に繋がらないとプレビュー用シンセBGMに切り替わります。
+
+## 動画一覧
+| Composition | 内容 | 素材 |
+|---|---|---|
+| `DopaMath` | 0.999…＝1 (ネオン調) | `src/videos/nine`, `public/nine` |
+| `OddSquares` | 奇数の和＝平方数 を図形で証明 (3Blue1Brown風の暗背景＋幾何図解) | `src/videos/odd`, `public/odd` |
+
+動画ごとに `--video <nine|odd>` を付けて素材を作ります:
+```bash
+python3 scripts/gen_voice.py --video odd
+python3 scripts/gen_bgm.py --video odd      # ACE-Step。プロンプトは src/videos/odd/meta.json の bgmPrompt
+npx remotion render OddSquares out/odd_squares.mp4
+```

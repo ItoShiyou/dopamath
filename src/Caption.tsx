@@ -1,7 +1,7 @@
 import React from "react";
 import { random, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { C, FONT } from "./fx";
-import { LINES, sec } from "./timeline";
+import { sec, useTL } from "./timeline";
 
 const parse = (chunk: string) => {
   const segs = chunk.split(/(\[[^\]]*\])/).filter(Boolean).map((t) => (t.startsWith("[") ? { t: t.slice(1, -1), hot: true } : { t, hot: false }));
@@ -12,6 +12,7 @@ const parse = (chunk: string) => {
 export const Caption: React.FC = () => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const LINES = useTL().lines;
   const line = [...LINES].reverse().find((l) => f >= sec(l.start) - 1);
   if (!line) return null;
   const chunks = line.text.split("|").map(parse);

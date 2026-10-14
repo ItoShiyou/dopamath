@@ -1,6 +1,6 @@
 import React from "react";
 import { interpolate, random, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { BEAT, HITS, TOTAL } from "./timeline";
+import { useTL, type Hit } from "./timeline";
 
 export const C = {
   bg: "#0a0518", pink: "#ff2d95", cyan: "#00e5ff", yellow: "#ffe600", lime: "#b6ff00",
@@ -9,9 +9,9 @@ export const C = {
 export const FONT = '"Noto Sans JP", "Noto Color Emoji", sans-serif';
 
 /** 効果音ヒットから計算する揺れ量 */
-export const shakeAt = (f: number) => {
+export const shakeAt = (f: number, hits: Hit[]) => {
   let x = 0, y = 0, r = 0, flash = 0;
-  for (const h of HITS) {
+  for (const h of hits) {
     const d = f - h.f;
     if (d < 0 || d > 14) continue;
     const a = Math.exp(-d / 3.2) * h.mag;
@@ -23,12 +23,13 @@ export const shakeAt = (f: number) => {
   return { x, y, r, flash: Math.min(flash, 0.85) };
 };
 
-export const beatPulse = (f: number) => Math.exp(-(f % BEAT) / 3.5);
+export const beatPulse = (f: number, beat = 12) => Math.exp(-(f % beat) / 3.5);
 
 export const Camera: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const f = useCurrentFrame();
-  const s = shakeAt(f);
-  const zoom = 1 + 0.018 * beatPulse(f);
+  const tl = useTL();
+  const s = shakeAt(f, tl.hits);
+  const zoom = 1 + 0.018 * beatPulse(f, tl.beat);
   return (
     <div style={{ position: "absolute", inset: 0, transform: `translate(${s.x}px, ${s.y}px) rotate(${s.r}deg) scale(${zoom})` }}>
       {children}
@@ -38,15 +39,17 @@ export const Camera: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
 export const FlashLayer: React.FC = () => {
   const f = useCurrentFrame();
-  const { flash } = shakeAt(f);
+  const { flash } = shakeAt(f, useTL().hits);
   const hue = (f * 7) % 360;
   return <div style={{ position: "absolute", inset: 0, background: `hsl(${hue},100%,85%)`, opacity: flash, mixBlendMode: "screen", pointerEvents: "none" }} />;
 };
 
-export const Background: React.FC = () => {
+export const Background: React.FC<{ calm?: boolean }> = ({ calm }) => {
   const f = useCurrentFrame();
+  const tl = useTL();
+  if (calm) return <CalmBackground />;
   const hue = (f * 1.6 + 260) % 360;
-  const pulse = beatPulse(f);
+  const pulse = beatPulse(f, tl.beat);
   const cols = 14;
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: C.bg }}>
@@ -151,4 +154,18 @@ export const Confetti: React.FC<{ at?: number; n?: number }> = ({ at = 0, n = 60
   );
 };
 
-export const progress = (f: number) => interpolate(f, [0, TOTAL], [0, 1], { extrapolateRight: "clamp" });
+export const progress = (f: number, total: number) => interpolate(f, [0, total], [0, 1], { extrapolateRight: "clamp" });
+
+/** 3Blue1Brown風: 暗い背景＋うっすら座標グリッド＋ビートで脈打つ光 */
+export const CalmBackground: React.FC = () => {
+  const f = useCurrentFrame();
+  const tl = useTL();
+  const pulse = beatPulse(f, tl.beat);
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#0b0e1c" }}>
+      <div style={{ position: "absolute", inset: -300, background: `radial-gradient(circle at ${50 + 14 * Math.sin(f / 40)}% ${38 + 8 * Math.cos(f / 33)}%, rgba(88,196,221,${0.2 + 0.1 * pulse}), transparent 55%)` }} />
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(88,196,221,.12) 2px, transparent 2px), linear-gradient(90deg, rgba(88,196,221,.12) 2px, transparent 2px)", backgroundSize: "120px 120px", backgroundPosition: `${(f * 0.6) % 120}px ${(f * 0.9) % 120}px` }} />
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,0.7) 100%)" }} />
+    </div>
+  );
+};
